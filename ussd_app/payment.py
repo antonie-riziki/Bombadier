@@ -49,7 +49,7 @@ def initiate_payment(phone_number):
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=30)
         response.raise_for_status()
-        return response.json()
+        # return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error initiating payment: {e}")
         return None
