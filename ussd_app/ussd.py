@@ -9,7 +9,7 @@ sys.path.insert(1, '/')
 
 from send_sms import chunk_message
 from ai_response import nutrients_metrics_func, crop_recommendations_func, future_forecast_func, market_projection_func
-
+from payment import initiate_payment
 
 
 app = Flask(__name__)
@@ -46,7 +46,7 @@ def ussd():
         response += "4. Subscribe for daily notifications"
 
     elif text == "1*1":
-        response = "CON Enter Mpesa number\n"
+        response = f"CON {initiate_payment(phone_number)}"
 
     elif text == "1*2":
         response = "CON My Dashboard \n"
