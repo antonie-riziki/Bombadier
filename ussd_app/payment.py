@@ -39,7 +39,7 @@ def initiate_payment(phone_number):
     payload = {
         "amount": 10,
         "phone_number": phone_number,
-        "channel_id": 911,
+        "channel_id": 3903,
         "provider": "m-pesa",
         "external_reference": "INV-009",
         "customer_name": "John Doe",
