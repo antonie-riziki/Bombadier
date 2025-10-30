@@ -14,7 +14,7 @@ import google.generativeai as genai
 from sklearn.impute import SimpleImputer
 
 sys.path.insert(1, './pages')
-print(sys.path.insert(1, '../pages/'))
+# print(sys.path.insert(1, '../pages/'))
 
 # Get the absolute path of the current file
 current_dir = os.path.dirname(os.path.abspath(__file__))

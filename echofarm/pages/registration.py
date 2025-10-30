@@ -5,8 +5,6 @@ import os
 import requests
 import google.generativeai as genai
 
-from streamlit_lottie import st_lottie
-
 
 from dotenv import load_dotenv
 
@@ -83,7 +81,7 @@ with col1:
 			        print(phone_number)
 
 			        # Set your message
-			        message = f"Welcome to SoilWise! Revolutionizing farming with advanced soil testing for better yields & sustainable growth. Let's cultivate a greener future together!";
+			        message = f"Welcome to Bombadier! Revolutionizing farming with advanced soil testing for better yields & sustainable growth. Let's cultivate a greener future together!";
 
 			        # Set your shortCode or senderId
 			        sender = 20880
@@ -92,7 +90,7 @@ with col1:
 			        	# responses = airtime.send(phone_number=airtime_rec, amount=amount, currency_code=currency_code)
 			        	response = sms.send(message, recipients, sender)
 
-			        	print(response)
+			        	# print(response)
 
 			        	# print(responses)
 

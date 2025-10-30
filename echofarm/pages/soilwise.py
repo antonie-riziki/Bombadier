@@ -63,19 +63,17 @@ main_body = st.container()
 
 
 with header:
-	st.title("SOILWISE: PROOF OF CONCEPT")
+	st.title("BOMBADIER: PROOF OF CONCEPT")
 
 	st.markdown('Discover the Secrets Beneath Your Feet')
 
 	st.write('''
-		SoilWise is your intelligent companion for understanding and optimizing soil health. Powered by advanced IoT sensors and 
-		Machine Learning algorithms, SoilWise analyzes your soil's type, moisture levels, pH, and nutrient content. It then provides 
+		Bombadier is your intelligent companion for understanding and optimizing soil health. Powered by advanced IoT sensors and 
+		Machine Learning algorithms, Bombadier analyzes your soil's type, moisture levels, pH, and nutrient content. It then provides 
 		tailored recommendations for the best crops to plant, ensuring maximum yield and sustainability. Whether you're a seasoned farmer 
-		or a first-time grower, SoilWise takes the guesswork out of farming and puts science in your hands.
+		or a first-time grower, Bombadier takes the guesswork out of farming and puts science in your hands.
 
 		''')
-	website_url = "https://soilwise-landingpage.vercel.app/"
-	st.markdown("ℹ️ Click here to view the SoilWise Landing Page 🌐 [link](%s)" % website_url)
 	
 	# tab1,tab2 = st.tabs(['Capture Image', 'Take a Video'])
 
