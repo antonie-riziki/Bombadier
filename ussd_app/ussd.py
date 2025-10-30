@@ -46,7 +46,7 @@ def ussd():
         response += "4. Subscribe for daily notifications"
 
     elif text == "1*1":
-        response = f"CON {initiate_payment(phone_number)}"
+        response = f"END Wait for Mpesa STK Push {initiate_payment(phone_number)}"
 
     elif text == "1*2":
         response = "CON My Dashboard \n"
@@ -96,11 +96,11 @@ def ussd():
 
     elif text == "2*1":
         response = "CON Loan Application \n"
-        resposne += "1. Instant Cash Loan\n"  
-        resposne += "2. Farm Input Loan (Seeds, Fertilizer, Pesticides)\n"  
-        resposne += "3. Equipment Loan (Tractor, Irrigation Kit, etc.)\n"  
-        resposne += "4. Group/Cooperative Loan \n" 
-        resposne += "5. Back \n" 
+        response += "1. Instant Cash Loan\n"  
+        response += "2. Farm Input Loan (Seeds, Fertilizer, Pesticides)\n"  
+        response += "3. Equipment Loan (Tractor, Irrigation Kit, etc.)\n"  
+        response += "4. Group/Cooperative Loan \n" 
+        response += "5. Back \n" 
 
 
     elif text == "2*2":

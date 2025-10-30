@@ -33,12 +33,12 @@ def initiate_payment(phone_number):
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Basic {os.getenv('PAYHERO_AUTH')}"
+        "Authorization": f"{os.getenv('PAYHERO_AUTH')}"
     }
 
     payload = {
         "amount": 10,
-        "phone_number": phone_number,
+        "phone_number": f"254{str(phone_number)}",
         "channel_id": 3903,
         "provider": "m-pesa",
         "external_reference": "INV-009",
@@ -54,8 +54,3 @@ def initiate_payment(phone_number):
         print(f"Error initiating payment: {e}")
         return None
 
-
-# Example usage:
-# if __name__ == "__main__":
-#     result = initiate_payment("0798766765")
-#     print(result)

@@ -29,8 +29,8 @@ with col1:
 	with st.form(key="user_registration"):
 	    st.subheader("User Self Registration")
 		
-	    fname, sname = st.columns(2)
-	    with fname:
+		fname, sname = st.columns(2)
+		with fname:
 	    	first_name = st.text_input("First Name")
 	    with sname:
 	    	surname = st.text_input("Surname")
