@@ -1,0 +1,41 @@
+import os
+import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+def initiate_payment(phone_number):
+    """
+    Initiates a payment request to PayHero API using the provided phone number.
+    """
+    url = "https://backend.payhero.co.ke/api/v2/payments"
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {os.getenv('PAYHERO_API_KEY')}"
+    }
+
+    payload = {
+        "amount": 10,
+        "phone_number": phone_number,
+        "channel_id": 911,
+        "provider": "m-pesa",
+        "external_reference": "INV-009",
+        "customer_name": "John Doe",
+        "callback_url": "https://example.com/callback.php"
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error initiating payment: {e}")
+        return None
+
+
+# Example usage:
+# if __name__ == "__main__":
+#     result = initiate_payment("0798766765")
+#     print(result)

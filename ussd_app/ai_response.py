@@ -9,7 +9,7 @@ load_dotenv()
 genai.configure(api_key = os.getenv("GOOGLE_API_KEY"))
 
 
-def nutrients_metrics_func(prompt):
+def nutrients_metrics_func():
 
     model = genai.GenerativeModel("gemini-2.0-flash", 
 
@@ -32,7 +32,7 @@ def nutrients_metrics_func(prompt):
 
 
     response = model.generate_content(
-        prompt,
+        
         generation_config = genai.GenerationConfig(
         max_output_tokens=1000,
         temperature=1.5, 
@@ -46,7 +46,7 @@ def nutrients_metrics_func(prompt):
 
 
 
-def crop_recommendations_func(prompt):
+def crop_recommendations_func():
 
     model = genai.GenerativeModel("gemini-2.0-flash", 
 
@@ -67,7 +67,7 @@ def crop_recommendations_func(prompt):
 
 
     response = model.generate_content(
-        prompt,
+        
         generation_config = genai.GenerationConfig(
         max_output_tokens=1000,
         temperature=1.5, 
@@ -81,7 +81,7 @@ def crop_recommendations_func(prompt):
 
 
 
-def future_forecast_func(prompt):
+def future_forecast_func():
 
     model = genai.GenerativeModel("gemini-2.0-flash", 
 
@@ -101,7 +101,7 @@ def future_forecast_func(prompt):
 
 
     response = model.generate_content(
-        prompt,
+        
         generation_config = genai.GenerationConfig(
         max_output_tokens=1000,
         temperature=1.5, 
@@ -114,7 +114,7 @@ def future_forecast_func(prompt):
     return response.text
 
 
-def market_projection_func(prompt):
+def market_projection_func():
 
     model = genai.GenerativeModel("gemini-2.0-flash", 
 
@@ -134,7 +134,7 @@ def market_projection_func(prompt):
 
 
     response = model.generate_content(
-        prompt,
+        
         generation_config = genai.GenerationConfig(
         max_output_tokens=1000,
         temperature=1.5, 

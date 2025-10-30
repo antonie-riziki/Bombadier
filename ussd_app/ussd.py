@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 
 sys.path.insert(1, '/')
 
-import send_sms
+from send_sms import chunk_message
+from ai_response import nutrients_metrics_func, crop_recommendations_func, future_forecast_func, market_projection_func
 
 
 
@@ -55,18 +56,18 @@ def ussd():
         response += "4. Market Projection \n"
 
     elif text == "1*2*1":
-        response = f"END You will recieve a message shortly {send_sms.chunk_message(phone_number, "NPK, Humidity, Temperature, Moisture levels, PH")}"
+        response = f"END You will recieve a message shortly {chunk_message(phone_number, nutrients_metrics_func())}"
 
     elif text == "1*2*2":
-        response = f"END You will recieve a message shortly {send_sms.chunk_message(phone_number, "NPK, Humidity, Temperature, Moisture levels, PH")}"
+        response = f"END You will recieve a message shortly {chunk_message(phone_number, crop_recommendations_func())}"
 
 
     elif text == "1*2*3":
-        response = f"END You will recieve a message shortly {send_sms.chunk_message(phone_number, "NPK, Humidity, Temperature, Moisture levels, PH")}"
+        response = f"END You will recieve a message shortly {chunk_message(phone_number, future_forecast_func())}"
 
 
     elif text == "1*2*4":
-        response = f"END You will recieve a message shortly {send_sms.chunk_message(phone_number, "NPK, Humidity, Temperature, Moisture levels, PH")}"
+        response = f"END You will recieve a message shortly {chunk_message(phone_number, market_projection_func())}"
 
 
     elif text == "1*3":
