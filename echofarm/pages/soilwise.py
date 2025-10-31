@@ -68,6 +68,8 @@ main_body = st.container()
 
 with header:
 	st.title("BOMBADIER: PROOF OF CONCEPT")
+	st.subheader("USSD: *789*90000#")
+	st.subheader("VOICE AGENT: +17624754312")
 
 	st.markdown('Discover the Secrets Beneath Your Feet')
 
@@ -938,3 +940,4 @@ if submit not in st.session_state:
 		st.metric("Total Interest Paid", "sh. " + str(round(total_int)), "")
 		# col2.metric("Wind", "9 mph", "-8%")
 		# col3.metric("Humidity", "86%", "4%")
+
