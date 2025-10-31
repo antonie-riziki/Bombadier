@@ -12,11 +12,15 @@ import warnings
 import joblib
 import random
 import africastalking
+import calendar
+
+from datetime import datetime, timedelta
+
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from sklearn.preprocessing import LabelEncoder 
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
@@ -377,7 +381,7 @@ with main_body:
 			return(soil_folder)
 
 
-		if st.form_submit_button("Cultivate Wisdom"):
+		if st.form_submit_button("Cultivate Wisdom", use_container_width=True, type="primary"):
 			col1, col2 = st.columns(2)
 
 			with st.expander('Full Report', expanded=True):
@@ -592,3 +596,344 @@ with main_body:
 
 
 	# gemini_chatbot()
+
+
+
+############################################################################
+
+# Loan functions 
+
+############################################################################
+
+
+def generate_synthetic_data(n=3000, random_state=42):
+    rng = np.random.RandomState(random_state)
+    # Features:
+    # farm_size (acres), avg_monthly_yield (kg), repayment_history_pct (0-100),
+    # group_member (0/1), mobile_money_usage_pct (0-100), assets_value_ksh,
+    # existing_loans_ksh, soil_quality_score (0-100), age, crop_type_encoded (0-4)
+    farm_size = rng.gamma(2.0, 1.5, size=n)  # skewed smallholder sizes
+    avg_yield = np.clip(rng.normal(500, 300, size=n), 50, None)
+    repayment_hist = np.clip(rng.normal(85, 20, size=n), 0, 100)
+    group_member = rng.binomial(1, 0.6, size=n)
+    mm_usage = np.clip(rng.normal(70, 30, size=n), 0, 100)
+    assets = np.clip(rng.normal(100000, 80000, size=n), 0, None)
+    existing_loans = np.clip(rng.normal(20000, 30000, size=n), 0, None)
+    soil_score = np.clip(rng.normal(60, 20, size=n), 0, 100)
+    age = np.clip(rng.normal(40, 12, size=n), 18, 80)
+    crop_type = rng.randint(0, 5, size=n)
+
+    # Outcome: default (1) or not (0). Construct using intuitive rules + noise.
+    # Higher yield, better repayment_hist, group_member, mm_usage reduce default.
+    risk_score = (
+        0.35 * (1 / (1 + farm_size)) +
+        0.30 * (1 - (repayment_hist / 100)) +
+        0.15 * (existing_loans / (existing_loans + assets + 1e-6)) +
+        0.10 * (1 - (soil_score / 100)) +
+        0.05 * (1 - (mm_usage / 100)) +
+        0.05 * (age < 25)  # younger farmers slightly more risky
+    )
+    # noise and clip
+    risk_score = (risk_score - risk_score.min()) / (risk_score.max() - risk_score.min())
+    # probability of default
+    p_default = 0.1 + 0.7 * risk_score  # baseline 10% up to ~80%
+    y = rng.binomial(1, p_default)
+    df = pd.DataFrame({
+        "farm_size": farm_size,
+        "avg_yield": avg_yield,
+        "repayment_hist": repayment_hist,
+        "group_member": group_member,
+        "mm_usage": mm_usage,
+        "assets": assets,
+        "existing_loans": existing_loans,
+        "soil_score": soil_score,
+        "age": age,
+        "crop_type": crop_type,
+        "default": y
+    })
+    return df
+
+# ---------------------------
+# Helper: train model
+# ---------------------------
+@st.cache_data(show_spinner=False)
+def train_model(df):
+    X = df.drop(columns=["default"])
+    y = df["default"]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=7)
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    model = RandomForestClassifier(n_estimators=150, random_state=7)
+    model.fit(X_train_scaled, y_train)
+
+    return model, scaler, X_test, y_test
+
+# ---------------------------
+# Scoring & interpretation
+# ---------------------------
+def compute_credit_score(model, scaler, features_df):
+    X_scaled = scaler.transform(features_df)
+    # We predict probability of default; we want score where higher is better credit
+    p_default = model.predict_proba(X_scaled)[:, 1]
+    credit_score = np.clip((1 - p_default) * 100, 0, 100)  # 0..100 (higher better)
+    return credit_score, p_default
+
+def risk_band_from_score(score):
+    if score >= 80:
+        return "Low risk"
+    if score >= 60:
+        return "Moderate risk"
+    if score >= 40:
+        return "High risk"
+    return "Very high risk"
+
+def generate_recommendation(score, p_default, row):
+    recs = []
+    if score >= 80:
+        recs.append("Eligible for standard loan products with normal rates.")
+    elif score >= 60:
+        recs.append("Eligible for small loan; consider co-borrower or cooperative guarantee.")
+    else:
+        recs.append("High risk — recommend small pilot loan, require group guarantee or collateral.")
+
+    # actionable items
+    if row["repayment_hist"] < 70:
+        recs.append("Improve repayment record by clearing past loans and paying on time.")
+    if row["soil_score"] < 50:
+        recs.append("Improve soil through composting and soil testing to increase productivity.")
+    if row["mm_usage"] < 50:
+        recs.append("Increase mobile money usage for better digital transaction history.")
+
+    # brief AI style sentence
+    ai_sentence = f"Estimated default probability: {p_default:.1%}. " + " ".join(recs[:2])
+    return ai_sentence
+
+# ---------------------------
+# Streamlit UI
+# ---------------------------
+# st.set_page_config(page_title="AgriLoan Analytics", layout="wide")
+# st.title("AgriLoan Analytics — Credit Scoring for Smallholder Farmers")
+# st.write("Enter farmer loan parameters to compute analytics, credit score, and recommendations.")
+
+# Left: input form
+with st.form("loan_form"):
+    st.header("Farmer Loan Inputs")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        farmer_name = st.text_input("Farmer name", value="John Doe")
+        phone = st.text_input("Phone (2547...)", value="254700000000")
+        age = st.number_input("Age", min_value=18, max_value=100, value=40)
+        farm_size = st.number_input("Farm size (acres)", min_value=0.01, max_value=100.0, value=1.0, step=0.1)
+        crop_type = st.selectbox("Crop type", ["Maize","Beans","Kale","Tomato","Sorghum"])
+    with col2:
+        avg_yield = st.number_input("Avg monthly yield (kg)", min_value=1.0, max_value=10000.0, value=500.0)
+        repayment_hist = st.slider("Repayment history (%)", min_value=0, max_value=100, value=85)
+        group_member = st.radio("Member of cooperative / group?", ("Yes","No"))
+        mm_usage = st.slider("Mobile money usage (%)", 0, 100, 70)
+    with col3:
+        assets = st.number_input("Assets value (KSH)", min_value=0.0, value=100000.0, step=1000.0)
+        existing_loans = st.number_input("Existing loans (KSH)", min_value=0.0, value=20000.0, step=1000.0)
+        soil_score = st.slider("Soil quality score (0-100)", 0, 100, 60)
+        requested_amount = st.number_input("Requested loan amount (KSH)", min_value=100.0, value=10000.0, step=100.0)
+
+    submitted = st.form_submit_button("Analyze & Score", use_container_width=True, type="primary")
+
+# Train model once
+df = generate_synthetic_data()
+model, scaler, X_test, y_test = train_model(df)
+
+# On submit: compute score and show analytics
+if submitted:
+    # prepare single-row dataframe with same features as training
+    crop_map = {"Maize":0,"Beans":1,"Kale":2,"Tomato":3,"Sorghum":4}
+    features = pd.DataFrame([{
+        "farm_size": farm_size,
+        "avg_yield": avg_yield,
+        "repayment_hist": repayment_hist,
+        "group_member": 1 if group_member == "Yes" else 0,
+        "mm_usage": mm_usage,
+        "assets": assets,
+        "existing_loans": existing_loans,
+        "soil_score": soil_score,
+        "age": age,
+        "crop_type": crop_map[crop_type]
+    }])
+
+    score_arr, p_default_arr = compute_credit_score(model, scaler, features)
+    score = float(score_arr[0])
+    p_default = float(p_default_arr[0])
+    band = risk_band_from_score(score)
+    recommendation = generate_recommendation(score, p_default, features.iloc[0])
+
+    # Layout results
+    st.subheader("Credit Score & Risk")
+    colA, colB = st.columns([1,2])
+    with colA:
+        st.metric("Credit Score (0-100)", f"{score:.1f}")
+        st.write("Risk band:", band)
+        st.write(f"Estimated default probability: {p_default:.1%}")
+        st.write("")
+        st.write("Quick recommendation:")
+        st.write(recommendation)
+
+    # Feature importance
+    feat_names = features.columns.tolist()
+    importances = model.feature_importances_
+    fi_df = pd.DataFrame({"feature": feat_names, "importance": importances}).sort_values("importance", ascending=False)
+
+    with colB:
+        st.write("Feature importances (model)")
+        fig, ax = plt.subplots(figsize=(6,3))
+        ax.barh(fi_df["feature"], fi_df["importance"])
+        ax.invert_yaxis()
+        ax.set_xlabel("Importance")
+        st.pyplot(fig)
+
+    # Show sample analytics: where this farmer sits in score distribution
+    # compute scores for test set quickly
+    X_test_scaled = scaler.transform(X_test)
+    p_default_test = model.predict_proba(X_test_scaled)[:, 1]
+    scores_test = (1 - p_default_test) * 100
+
+    st.write("Score distribution vs this farmer")
+    fig2, ax2 = plt.subplots(figsize=(8,2.5))
+    ax2.hist(scores_test, bins=30)
+    ax2.axvline(score, color="k", linewidth=2, linestyle="--")
+    ax2.set_xlabel("Credit Score")
+    st.pyplot(fig2)
+
+    # Decision guidance (loan sizing suggestion)
+    # Simple rule: max exposure = assets * 0.5 * (score/100)
+    suggested_max = features["assets"].iloc[0] * 0.5 * (score/100)
+    suggested_amount = min(requested_amount, suggested_max)
+    st.write(f"Suggested maximum loan based on simple exposure rule: KSH {suggested_max:,.0f}")
+    st.write(f"Suggested approved amount for this request: KSH {suggested_amount:,.0f}")
+
+    # Offer to export report
+    report = {
+        "farmer_name": farmer_name,
+        "phone": phone,
+        "score": score,
+        "default_prob": p_default,
+        "risk_band": band,
+        "suggested_amount": suggested_amount,
+        "requested_amount": requested_amount,
+        "recommendation": recommendation
+    }
+    report_df = pd.DataFrame([report])
+
+    csv = report_df.to_csv(index=False).encode("utf-8")
+    st.download_button("Download report (CSV)", data=csv, file_name=f"{farmer_name}_loan_report.csv", mime="text/csv")
+
+    # Short plain-language message suitable for SMS/USSD
+    sms_msg = (f"{farmer_name}: Credit score {score:.0f}/100 ({band}). "
+               f"Default risk {p_default:.0%}. Recommended loan KSH {suggested_amount:,.0f}.")
+    st.write("Short message for farmer (SMS/USSD):")
+    st.code(sms_msg)
+
+# Sidebar: quick info and model performance
+with st.sidebar:
+    st.header("Model / App Info")
+    st.write("Prototype model trained on synthetic data.")
+    st.write("Use real historical data for production.")
+    if st.button("Show sample data (first 5 rows)"):
+        st.dataframe(df.head())
+
+    # display a tiny model performance summary
+    try:
+        X = df.drop(columns=["default"])
+        y = df["default"]
+        X_scaled = scaler.transform(X)
+        preds = model.predict(X_scaled)
+        acc = (preds == y).mean()
+        st.write(f"Model approximate accuracy (on synthetic data): {acc:.2%}")
+    except Exception:
+        st.write("Model not ready.")
+
+
+##############################################################################################################################
+
+# LOAN CALCULATING LOGIC
+
+###############################################################################################################################
+
+with st.form(key='form1'):
+	col1, col2, col3 = st.columns(3)
+	with col1:
+		loan_amount = st.number_input('amount borrowed', value=0, min_value=0, max_value=int(10e10))
+
+	with col2:
+		payment_rate = st.slider('Interest rate', 0.0, 10.0)/100.0
+
+	with col3:
+		monthly_amount = st.number_input('Monthly re-payment', min_value=0, max_value=int(10e10))
+
+	# submit_label = f'<i class="fas fa-calculator">Calculate</i> '
+	# submit = st.form_submit_button(submit_label)
+
+	submit = st.form_submit_button(label='Loan Metrics', use_container_width=True, type="primary")
+
+	#Determine the total period it takes to repay off a loan
+	# bal = 5000
+	# interestRate = 0.13
+	# monthlyPayment = 500
+
+if submit not in st.session_state:
+	df = pd.DataFrame(columns=['End Month', 'Loan Amount', 'Interest Charge'])
+	
+	current_date = datetime.today()
+	# print(current_date)
+
+	end_month_day = calendar.monthrange(current_date.year, current_date.month)[1]
+	days_left = end_month_day - current_date.day
+
+	next_month_start_date = current_date + timedelta(days=days_left + 1)
+	end_month = next_month_start_date
+
+	period_count = 0
+	total_int = 0
+	data = []
+
+	while loan_amount > 0:
+		int_charge = (payment_rate / 12) * loan_amount
+		loan_amount += int_charge
+		loan_amount -= monthly_amount
+
+		if loan_amount <= 0:
+			loan_amount = 0
+		total_int += int_charge
+		print(end_month, round(loan_amount, 2), round(int_charge, 2))
+
+		period_count += 1
+		new_date = calendar.monthrange(end_month.year, end_month.month)[1]
+		end_month += timedelta(days=new_date)
+
+		# df = df.append({'End Month': end_month, 'Loan Amount': round(loan_amount, 2), 'Interest Charge': round(int_charge, 2)}, ignore_index=True)
+
+		data.append([end_month.date(), round(loan_amount, 2), round(int_charge, 2)])
+
+		if loan_amount == 0:
+			break
+
+	print('Total Interest Rate paid: ', total_int)
+	df = pd.DataFrame(data, columns=['next_pay_date', 'amount_remaining', 'interest_amount'])
+
+	
+	years = int(period_count // 12)
+	months_remaining = round(period_count % 12)
+	print(f"{years} years and {months_remaining} months")
+
+	col1, col2 = st.columns(2)
+	with col1:
+		st.dataframe(df, use_container_width=True)
+
+	with col2:
+		st.write('Loan payment due')
+		col1, col2, col3 = st.columns(3)
+		col1.metric("", str(years), " yrs")
+		col2.metric("", str(months_remaining), " months")
+		st.metric("Total Interest Paid", "sh. " + str(round(total_int)), "")
+		# col2.metric("Wind", "9 mph", "-8%")
+		# col3.metric("Humidity", "86%", "4%")
