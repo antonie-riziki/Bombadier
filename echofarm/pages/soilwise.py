@@ -860,6 +860,7 @@ with st.sidebar:
 ###############################################################################################################################
 
 with st.form(key='form1'):
+	st.header("Farmer Loan Metrics Calculator")
 	col1, col2, col3 = st.columns(3)
 	with col1:
 		loan_amount = st.number_input('amount borrowed', value=0, min_value=0, max_value=int(10e10))
