@@ -20,7 +20,7 @@ def chunk_message(phone_number, message):
 	recipients = [f"{str(phone_number)}"]
 
 
-	sender = 20880
+	sender = "Test"
 
 	try:
 		response = sms.send(message, recipients, sender)
