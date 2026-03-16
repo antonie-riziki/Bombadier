@@ -69,7 +69,7 @@ with col1:
 					
 					recipients = [f"+254{str(phone_number)}"]
 
-			        # airtime_rec = "+254" + str(phone_number)
+			        airtime_rec = "+254" + str(phone_number)
 					print(recipients)
 					print(phone_number)
 
