@@ -68,8 +68,9 @@ with col1:
 					currency_code = "KES"
 					
 					recipients = [f"+254{str(phone_number)}"]
-
-			        airtime_rec = "+254" + str(phone_number)
+					
+					airtime_rec = "+254" + str(phone_number)
+					
 					print(recipients)
 					print(phone_number)
 
