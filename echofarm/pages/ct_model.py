@@ -170,50 +170,41 @@ def get_recommended_crop(data):
 	recommended_index = np.argmax(probabilities)
 	recommended_crop = le.inverse_transform([recommended_index])[0]
 
-	st.subheader(f''' We also Recommend: {recommended_crop}''')
-	st.write(f'''Based on the current soil conditions, {recommended_crop} is a highly suitable 
-		choice for cultivation. Monitoring soil health and maintaining optimal conditions can further enhance productivity ''')
+	st.subheader(f' We also Recommend: {recommended_crop}')
+	st.write(f'Based on the current soil conditions, {recommended_crop} is a highly suitable choice for cultivation. Monitoring soil health and maintaining optimal conditions can further enhance productivity ')
 
-	st.subheader(f''' Intercropping associated with {recommended_crop}''')
+	st.subheader(f' Intercropping associated with {recommended_crop}')
 
-	prompt = (f''' Suggest two or more crops that can be grown together with {recommended_crop} in an intercropping system in the Kenyan ecosystem, considering nutrient needs and benefits for each crop. 
-		For example, beans release nitrogen, which benefits nitrogen-demanding crops like maize. Provide examples for different soil types or 
-		climates if possible. Just list the crops dont provide too much information  ''')
+	prompt = (f' Suggest two or more crops that can be grown together with {recommended_crop} in an intercropping system in the Kenyan ecosystem, considering nutrient needs and benefits for each crop. For example, beans release nitrogen, which benefits nitrogen-demanding crops like maize. Provide examples for different soil types or climates if possible. Just list the crops dont provide too much information  ')
 
-	model = genai.GenerativeModel("gemini-3-flash-preview", 
-		# system_instruction = "You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable."
-)
-	response = model.generate_content(
-    prompt,
-    generation_config = genai.GenerationConfig(
-        max_output_tokens=1000,
-        temperature=0.1,
-    )
-)
+	response = client.models.generate_content(
+		model="gemini-3-flash-preview",
+		contents=prompt,
+		config={
+			'max_output_tokens': 1000,
+			'temperature': 0.1,
+		}
+	)
 
 	st.write(response.text)
 
 
-	st.subheader(f''' Crop Rotation associated with {recommended_crop}''')
+	st.subheader(f' Crop Rotation associated with {recommended_crop}')
 
-	prompt = (f'''In summary points List crop rotation based on {recommended_crop} for sustainable soil health and nutrient management in Kenyan ecosystem and have high-yield crops for economic benefit. 
-		Provide recommendations tailored to {recommended_crop} just for year 1. Just list the crops dont provide too much information''')
+	prompt = (f'In summary points List crop rotation based on {recommended_crop} for sustainable soil health and nutrient management in Kenyan ecosystem and have high-yield crops for economic benefit. Provide recommendations tailored to {recommended_crop} just for year 1. Just list the crops dont provide too much information')
 
-	model = genai.GenerativeModel("gemini-3-flash-preview", 
-		# system_instruction = "You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable."
-)
-	response = model.generate_content(
-    prompt,
-    generation_config = genai.GenerationConfig(
-        max_output_tokens=1000,
-        temperature=0.1,
-    )
-)
+	response = client.models.generate_content(
+		model="gemini-3-flash-preview",
+		contents=prompt,
+		config={
+			'max_output_tokens': 1000,
+			'temperature': 0.1,
+		}
+	)
 
 	st.write(response.text)
 
 	return recommended_crop
-	
 
 
 def get_ai_content(prompt):
