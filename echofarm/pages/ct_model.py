@@ -10,7 +10,7 @@ import sys
 import tempfile
 import warnings
 import joblib
-import google.generativeai as genai
+from google import genai
 
 
 
@@ -28,7 +28,7 @@ sys.path.insert(1, './pages')
 
 load_dotenv()
 
-genai.configure(api_key = os.getenv("GOOGLE_API_KEY"))
+client = genai.Client(api_key = os.getenv("GOOGLE_API_KEY"))
 
 le = LabelEncoder()
 
@@ -99,17 +99,9 @@ def prepare_train_test_for_crop_type(df):
 
 
 def get_gemini_response(prompt, question):
-
-	model = genai.GenerativeModel("gemini-3-flash-preview")
-	# response = model.generate_content("Write a story about a magic backpack.")
-	chat = model.start_chat(history=[])
-	# return chat
-	# print(response.text)
-
-
-	# chat = gemini_chatbot()
-	response=chat.send_message((
-		prompt + question).replace('\n', ' ').replace('\r', ''), stream=True)
+	chat = client.chats.create(model="gemini-3-flash-preview")
+	response = chat.send_message_stream((
+		prompt + question).replace('\n', ' ').replace('\r', ''))
 	return st.write(response)
 
 
@@ -225,21 +217,19 @@ def get_recommended_crop(data):
 
 
 def get_ai_content(prompt):
-
-	model = genai.GenerativeModel("gemini-3-flash-preview", 
-		system_instruction = '''
+	response = client.models.generate_content(
+		model="gemini-3-flash-preview",
+		contents=prompt + ' in Kenya',
+		config={
+			'system_instruction': '''
   You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide precise, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agriculture. 
   Keep responses short, clear, and data-driven, avoiding excessive details. Prioritize quantifiable insights (e.g., optimal soil pH, recommended fertilizer ratios, expected yield per acre) to ensure farmers can take immediate, informed action. 
   Maintain a meek and professional tone while making information easy to understand and apply
-  '''
-)
-	response = model.generate_content(
-    prompt + ' in Kenya',
-    generation_config = genai.GenerationConfig(
-        max_output_tokens=1000,
-        temperature=0.1,
-    )
-)
+  ''',
+			'max_output_tokens': 1000,
+			'temperature': 0.1,
+		}
+	)
 	
 	st.write(response.text)
 
@@ -247,9 +237,11 @@ def get_ai_content(prompt):
 
 
 def the_explainer(prompt):
-
-	model = genai.GenerativeModel("gemini-3-flash-preview", 
-		system_instruction = '''
+	response = client.models.generate_content(
+		model="gemini-3-flash-preview",
+		contents=prompt,
+		config={
+			'system_instruction': '''
 					You are an intelligent data analysis assistant designed to help users understand insights derived from grouped farmers datasets. 
 					Your primary objective is to provide clear, concise, and engaging explanations of visualized data based on the user's selected country or region, the specific series being analyzed, and key insights.
 
@@ -260,33 +252,27 @@ def the_explainer(prompt):
 					4. Using a professional yet approachable tone to ensure the explanation is interactive and user-friendly.
 
 					Make sure your explanations are tailored to the user's selections and provide actionable insights wherever applicable also note that the dataset is strictly based on farmers data collection also summarize and quantify the results and possible as you can.
-					''')
-
-	response = model.generate_content(
-    prompt,
-    generation_config = genai.GenerationConfig(
-        max_output_tokens=1000,
-        temperature=0.1,
-    )
-)
+					''',
+			'max_output_tokens': 1000,
+			'temperature': 0.1,
+		}
+	)
 	
 	st.write(response.text)
 
 
 
 def get_crop_summary(prompt):
-
-	model = genai.GenerativeModel("gemini-3-flash-preview", 
-		system_instruction = '''
-  You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable as well as quantifying your reponse as much as possible.'''
-)
-	response = model.generate_content(
-    prompt + ' in Kenya',
-    generation_config = genai.GenerationConfig(
-        max_output_tokens=1000,
-        temperature=0.1,
-    )
-)
+	response = client.models.generate_content(
+		model="gemini-3-flash-preview",
+		contents=prompt + ' in Kenya',
+		config={
+			'system_instruction': '''
+  You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable as well as quantifying your reponse as much as possible.''',
+			'max_output_tokens': 1000,
+			'temperature': 0.1,
+		}
+	)
 
 	st.write(response.text)
 
