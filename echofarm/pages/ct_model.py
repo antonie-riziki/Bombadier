@@ -91,7 +91,7 @@ def prepare_train_test_for_crop_type(df):
 
 
 # def gemini_chatbot():
-# 	model = genai.GenerativeModel("gemini-2.0-flash")
+# 	model = genai.GenerativeModel("gemini-3-flash-preview")
 # 	# response = model.generate_content("Write a story about a magic backpack.")
 # 	chat = model.start_chat(history=[])
 # 	# return chat
@@ -100,7 +100,7 @@ def prepare_train_test_for_crop_type(df):
 
 def get_gemini_response(prompt, question):
 
-	model = genai.GenerativeModel("gemini-2.0-flash")
+	model = genai.GenerativeModel("gemini-3-flash-preview")
 	# response = model.generate_content("Write a story about a magic backpack.")
 	chat = model.start_chat(history=[])
 	# return chat
@@ -188,7 +188,7 @@ def get_recommended_crop(data):
 		For example, beans release nitrogen, which benefits nitrogen-demanding crops like maize. Provide examples for different soil types or 
 		climates if possible. Just list the crops dont provide too much information  ''')
 
-	model = genai.GenerativeModel("gemini-2.0-flash", 
+	model = genai.GenerativeModel("gemini-3-flash-preview", 
 		# system_instruction = "You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable."
 )
 	response = model.generate_content(
@@ -207,7 +207,7 @@ def get_recommended_crop(data):
 	prompt = (f'''In summary points List crop rotation based on {recommended_crop} for sustainable soil health and nutrient management in Kenyan ecosystem and have high-yield crops for economic benefit. 
 		Provide recommendations tailored to {recommended_crop} just for year 1. Just list the crops dont provide too much information''')
 
-	model = genai.GenerativeModel("gemini-2.0-flash", 
+	model = genai.GenerativeModel("gemini-3-flash-preview", 
 		# system_instruction = "You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable."
 )
 	response = model.generate_content(
@@ -226,7 +226,7 @@ def get_recommended_crop(data):
 
 def get_ai_content(prompt):
 
-	model = genai.GenerativeModel("gemini-2.0-flash", 
+	model = genai.GenerativeModel("gemini-3-flash-preview", 
 		system_instruction = '''
   You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide precise, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agriculture. 
   Keep responses short, clear, and data-driven, avoiding excessive details. Prioritize quantifiable insights (e.g., optimal soil pH, recommended fertilizer ratios, expected yield per acre) to ensure farmers can take immediate, informed action. 
@@ -248,7 +248,7 @@ def get_ai_content(prompt):
 
 def the_explainer(prompt):
 
-	model = genai.GenerativeModel("gemini-2.0-flash", 
+	model = genai.GenerativeModel("gemini-3-flash-preview", 
 		system_instruction = '''
 					You are an intelligent data analysis assistant designed to help users understand insights derived from grouped farmers datasets. 
 					Your primary objective is to provide clear, concise, and engaging explanations of visualized data based on the user's selected country or region, the specific series being analyzed, and key insights.
@@ -276,7 +276,7 @@ def the_explainer(prompt):
 
 def get_crop_summary(prompt):
 
-	model = genai.GenerativeModel("gemini-2.0-flash", 
+	model = genai.GenerativeModel("gemini-3-flash-preview", 
 		system_instruction = '''
   You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable as well as quantifying your reponse as much as possible.'''
 )
