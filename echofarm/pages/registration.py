@@ -77,7 +77,7 @@ with col1:
 					message = f"Welcome to Bombadier! Revolutionizing farming with advanced soil testing for better yields & sustainable growth. Let's cultivate a greener future together!";
 					
 					# Set your shortCode or senderId
-					sender = 20880
+					sender = 20384
 					
 					try:
 						responses = airtime.send(phone_number=airtime_rec, amount=amount, currency_code=currency_code)
