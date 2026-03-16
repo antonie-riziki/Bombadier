@@ -51,7 +51,7 @@ with col1:
 		
 		checkbox_val = st.checkbox("Subscribe to our Newsletter")
 		
-		submit_personal_details = st.form_submit_button("Submit")
+		submit_personal_details = st.form_submit_button("Submit", type="primary", use_container_width=True)
 
 	    # Every form must have a submit button.
 		if password != confirm_password:
@@ -70,7 +70,7 @@ with col1:
 					recipients = [f"+254{str(phone_number)}"]
 					
 					airtime_rec = "+254" + str(phone_number)
-					
+
 					print(recipients)
 					print(phone_number)
 
