@@ -181,7 +181,7 @@ def get_recommended_crop(data):
 		model="gemini-3-flash-preview",
 		contents=prompt,
 		config={
-			'max_output_tokens': 1000,
+			'max_output_tokens': 10000,
 			'temperature': 0.1,
 		}
 	)
@@ -197,7 +197,7 @@ def get_recommended_crop(data):
 		model="gemini-3-flash-preview",
 		contents=prompt,
 		config={
-			'max_output_tokens': 1000,
+			'max_output_tokens': 10000,
 			'temperature': 0.1,
 		}
 	)
@@ -217,7 +217,7 @@ def get_ai_content(prompt):
   Keep responses short, clear, and data-driven, avoiding excessive details. Prioritize quantifiable insights (e.g., optimal soil pH, recommended fertilizer ratios, expected yield per acre) to ensure farmers can take immediate, informed action. 
   Maintain a meek and professional tone while making information easy to understand and apply
   ''',
-			'max_output_tokens': 1000,
+			'max_output_tokens': 10000,
 			'temperature': 0.1,
 		}
 	)
@@ -244,7 +244,7 @@ def the_explainer(prompt):
 
 					Make sure your explanations are tailored to the user's selections and provide actionable insights wherever applicable also note that the dataset is strictly based on farmers data collection also summarize and quantify the results and possible as you can.
 					''',
-			'max_output_tokens': 1000,
+			'max_output_tokens': 10000,
 			'temperature': 0.1,
 		}
 	)
@@ -260,7 +260,7 @@ def get_crop_summary(prompt):
 		config={
 			'system_instruction': '''
   You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable as well as quantifying your reponse as much as possible.''',
-			'max_output_tokens': 1000,
+			'max_output_tokens': 10000,
 			'temperature': 0.1,
 		}
 	)
