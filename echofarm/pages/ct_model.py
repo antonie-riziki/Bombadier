@@ -30,6 +30,38 @@ load_dotenv()
 
 client = genai.Client(api_key = os.getenv("GOOGLE_API_KEY"))
 
+PRIMARY_MODEL = "gemini-2.0-flash"
+FALLBACK_MODEL = "gemini-1.5-flash"
+
+def safe_generate_content(prompt, config=None, is_chat=False):
+	"""
+	Safe wrapper for generating content with fallback to a different model 
+	and error handling for quota exhaustion.
+	"""
+	models_to_try = [PRIMARY_MODEL, FALLBACK_MODEL]
+	
+	for model_name in models_to_try:
+		try:
+			if is_chat:
+				chat = client.chats.create(model=model_name)
+				return chat.send_message_stream(prompt)
+			else:
+				return client.models.generate_content(
+					model=model_name,
+					contents=prompt,
+					config=config
+				)
+		except Exception as e:
+			if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+				if model_name == models_to_try[-1]:
+					st.error(f"Gemini API quota exceeded. Please try again later. Details: {str(e)}")
+					return None
+				continue # Try next model
+			else:
+				st.error(f"An error occurred with Gemini API: {str(e)}")
+				return None
+	return None
+
 le = LabelEncoder()
 
 rfr = RandomForestRegressor()
@@ -99,10 +131,11 @@ def prepare_train_test_for_crop_type(df):
 
 
 def get_gemini_response(prompt, question):
-	chat = client.chats.create(model="gemini-3-flash-preview")
-	response = chat.send_message_stream((
-		prompt + question).replace('\n', ' ').replace('\r', ''))
-	return st.write(response)
+	clean_prompt = (prompt + question).replace('\n', ' ').replace('\r', '')
+	response = safe_generate_content(clean_prompt, is_chat=True)
+	if response:
+		return st.write(response)
+	return None
 
 
 	# st.set_page_config(page_title='Mental Health Chatbot')
@@ -208,9 +241,8 @@ def get_recommended_crop(data):
 
 
 def get_ai_content(prompt):
-	response = client.models.generate_content(
-		model="gemini-3-flash-preview",
-		contents=prompt + ' in Kenya',
+	response = safe_generate_content(
+		prompt + ' in Kenya',
 		config={
 			'system_instruction': '''
   You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide precise, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agriculture. 
@@ -222,15 +254,15 @@ def get_ai_content(prompt):
 		}
 	)
 	
-	st.write(response.text)
+	if response:
+		st.write(response.text)
 
 	# st.write(response.text)
 
 
 def the_explainer(prompt):
-	response = client.models.generate_content(
-		model="gemini-3-flash-preview",
-		contents=prompt,
+	response = safe_generate_content(
+		prompt,
 		config={
 			'system_instruction': '''
 					You are an intelligent data analysis assistant designed to help users understand insights derived from grouped farmers datasets. 
@@ -249,14 +281,14 @@ def the_explainer(prompt):
 		}
 	)
 	
-	st.write(response.text)
+	if response:
+		st.write(response.text)
 
 
 
 def get_crop_summary(prompt):
-	response = client.models.generate_content(
-		model="gemini-3-flash-preview",
-		contents=prompt + ' in Kenya',
+	response = safe_generate_content(
+		prompt + ' in Kenya',
 		config={
 			'system_instruction': '''
   You are an expert agricultural assistant named Bombadier AI. Your purpose is to provide farmers with accurate, practical, and localized advice on soil quality, crop recommendations, farming techniques, and sustainable agricultural practices. Respond in a friendly and professional tone, ensuring your guidance is easy to understand and actionable as well as quantifying your reponse as much as possible.''',
@@ -265,7 +297,8 @@ def get_crop_summary(prompt):
 		}
 	)
 
-	st.write(response.text)
+	if response:
+		st.write(response.text)
 
 
 
